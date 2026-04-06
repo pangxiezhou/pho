@@ -1,0 +1,68 @@
+name: Build iOS IPA (Unsigned)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache: true
+
+      - name: Install Protobuf
+        run: brew install protobuf
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.12'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dart Protoc Plugin
+        run: dart pub global activate protoc_plugin
+
+      - name: Add Pub Cache and Go bin to PATH
+        run: |
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Prebuild (protoc-gen-go, protoc-gen-go-grpc)
+        run: make prebuild
+
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+
+      - name: Backend Framework Compilation (gomobile)
+        run: make server-ios
+
+      - name: Flutter Packages Get
+        run: flutter pub get
+
+      - name: Flutter Build iOS
+        run: flutter build ios --release --no-codesign --obfuscate --split-debug-info=./debug-info
+
+      - name: Package Unsigned IPA
+        run: |
+          mkdir -p Payload
+          mv build/ios/iphoneos/Runner.app Payload/
+          zip -r pho-ios-unsigned.ipa Payload/
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pho-ios-unsigned-ipa
+          path: pho-ios-unsigned.ipa
+          retention-days: 5
