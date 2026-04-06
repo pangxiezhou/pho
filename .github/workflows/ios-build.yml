@@ -57,6 +57,9 @@ jobs:
       - name: Flutter Packages Get
         run: flutter pub get
 
+      - name: Generate Localizations
+        run: flutter gen-l10n
+
       - name: Flutter Build iOS
         run: flutter build ios --release --no-codesign --obfuscate --split-debug-info=./debug-info
 
