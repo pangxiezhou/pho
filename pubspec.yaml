@@ -40,11 +40,11 @@ dependencies:
   # photo_manager: ^2.6.0
   photo_manager:
     git:
-      url: https://github.com/fluttercandies/flutter_photo_manager.git
+      url: git@github.com:fluttercandies/flutter_photo_manager.git
       ref: main
   photo_view:
     git:
-      url: https://github.com/bluefireteam/photo_view.git
+      url: git@github.com:bluefireteam/photo_view.git
       ref: main
   date_format: ^2.0.7
   image_picker: ^1.0.0
